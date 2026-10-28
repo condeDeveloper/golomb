@@ -1,0 +1,49 @@
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        so: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # O juiz e a DEFINICAO de regua de Golomb: nenhuma distancia medida duas
+      # vezes. Ele nao sabe podar, nao sabe de cota e nao sabe de espelho, e refaz
+      # no braco a afirmacao "nao existe regua menor" para as ordens pequenas.
+      - name: testes
+        run: dotnet test testes/Golomb.Testes/Golomb.Testes.csproj -c Release --nologo -v q
+
+      - name: a menor regua de cada ordem
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- otimos
+
+      - name: a ordem 11 sozinha
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- onze
+
+      - name: o que cada poda vale
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- podas
+
+      - name: as reguas perfeitas, que acabam cedo
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- perfeitas
+
+      - name: a busca contra o juiz que nao poda nada
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- juiz
+
+      - name: quem nao procura tambem entrega regua
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- construcoes
+
+      - name: o mesmo problema no anel
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- anel
